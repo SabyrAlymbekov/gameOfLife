@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>game of life</title>
+</head>
+
+<body>
+  <div id="grid"></div>
+  <button id="next">Next generation</button>
+  <button id="auto">Auto</button>
+  <button id="random">random</button>
+  <button id="clear">clear</button>
+  Gen: <span id="counter">0</span>
+  <script>
+    class Game {
+      constructor(parent, width, height) {
+        this.width = width;
+        this.height = height;
+        this.content = [];
+        this.parent = parent;
+        this.auto = false;
+        this.gen = 0;
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            this.content[y * width + x] = 0;
+          }
+        }
+        this.render();
+      }
+      nextGen() {
+        let new_content = JSON.parse(JSON.stringify(this.content))
+        this.gen++
+        for (let y = 0; y < this.height; y++) {
+          for (let x = 0; x < this.width; x++) {
+            let neighbors = this.neighbor(x, y);
+            
+            if (this.content[x + y * this.width]) {
+              if (neighbors!=2&&neighbors!=3) {
+                new_content[x + y * this.width] = 0
+              }
+            } else {
+              if (neighbors==3) {
+                new_content[x + y * this.width] = 1
+              }
+            }
+          }
+        }
+        this.content = new_content
+        this.render();
+      }
+      neighbor(x, y) {
+        let count = 0;
+        for (let y1 = Math.max(0, y - 1); y1 <= Math.min(this.height - 1, y + 1); y1++) {
+          for (let x1 = Math.max(0, x - 1); x1 <= Math.min(this.width - 1, x + 1); x1++) {
+            if ((x1 != x || y1 != y) && this.content[x1 + y1 * this.width]) {
+              count++;
+            }
+          }
+        }
+        return count;
+      }
+      random() {
+        for (let y = 0; y < this.height; y++) {
+          for (let x = 0; x < this.width; x++) {
+            let random = Math.round(Math.random())
+            console.log(random);
+            this.content[x + y * this.width] = random
+          }
+        }
+        this.render()
+      }
+      clear() {
+        for (let y = 0; y < this.height; y++) {
+          for (let x = 0; x < this.width; x++) {
+            this.content[x + y * this.width] = 0
+          }
+        }
+        this.render()
+      }
+      render() {
+        this.parent.innerHTML = "";
+        let table = document.createElement("table");
+        for (let y = 0; y < this.height; y++) {
+          let tr = document.createElement("tr");
+          for (let x = 0; x < this.width; x++) {
+            let td = document.createElement("td");
+            let input = document.createElement("input");
+            input.type = "checkbox";
+            input.addEventListener("change", () => {
+              this.content[y + x  * this.width ] = this.content[
+              y + x  * this.width 
+              ]
+                ? 0
+                : 1;
+            });
+            if (this.content[y + x  * this.width ] == 1) {
+              input.setAttribute("checked", "checked");
+            }
+            td.appendChild(input);
+            tr.appendChild(td);
+          }
+          table.appendChild(tr);
+        }document.getElementById("counter").innerText = this.gen
+        this.parent.appendChild(table);
+      }
+      
+    }
+    const game = new Game(document.getElementById("grid"), 20, 20);
+    game.random()
+    let int;
+    document.getElementById("next").addEventListener("click", () => {
+      game.nextGen();
+    });
+    document.getElementById("random").addEventListener("click", () => {
+      game.random();
+    });
+    document.getElementById("clear").addEventListener("click", () => {
+      game.clear();
+    });
+    document.getElementById("auto").addEventListener("click", ()=>{
+      console.log(game.auto);
+      game.auto = game.auto ? false : true
+      console.log(game.auto);
+      if (game.auto) {
+        int = setInterval(()=>{
+          game.nextGen();
+        }, 100)
+      } else {
+        clearInterval(int)
+      }
+    })
+  </script>
+</body>
+
+</html>
